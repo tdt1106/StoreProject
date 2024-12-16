@@ -1,4 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StoreProject.Models;
+using StoreProject.Data;
+using HeaderManagement.Data;
+using StoreProject.Repositories;
 
 namespace StoreProject.Controllers
 {
@@ -6,38 +10,39 @@ namespace StoreProject.Controllers
     [ApiController]
     public class HeaderController : ControllerBase
     {
-        private readonly HeaderRepository _repository;
+        private readonly IHeaderRepository _repository;
 
-        public HeaderController(IConfiguration configuration)
+        public HeaderController(IHeaderRepository repository)
         {
-            _repository = new HeaderRepository(configuration.GetConnectionString("DefaultConnection"));
+            _repository = repository;
         }
 
+
         [HttpGet("Get")]
-        public IActionResult GetHeaders(int? id = null, Guid? rowPointer = null)
+        public async Task<IActionResult> GetHeaders(int? id = null, Guid? rowPointer = null)
         {
-            var result = _repository.GetHeaders(id, rowPointer);
+            var result = await _repository.GetAllAsync();
             return Ok(result);
         }
 
         [HttpPost("Insert")]
-        public IActionResult InsertHeader([FromBody] HeaderModel model)
+        public async Task<IActionResult> InsertHeader([FromBody] HeaderModel model)
         {
-            _repository.InsertHeader(model);
+            await _repository.AddAsync(model); 
             return Ok("Inserted successfully");
         }
 
         [HttpPut("Update")]
         public IActionResult UpdateHeader([FromBody] HeaderModel model)
         {
-            _repository.UpdateHeader(model);
+            _repository.Update(model); 
             return Ok("Updated successfully");
         }
 
         [HttpDelete("Delete")]
-        public IActionResult DeleteHeader(int? id = null, Guid? rowPointer = null)
+        public async Task<IActionResult> DeleteHeader(int? id = null, Guid? rowPointer = null)
         {
-            _repository.DeleteHeader(id, rowPointer);
+            await _repository.DeleteAsync(id ?? 0); 
             return Ok("Deleted successfully");
         }
     }
