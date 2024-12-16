@@ -28,22 +28,55 @@ namespace StoreProject.Controllers
         [HttpPost("Insert")]
         public async Task<IActionResult> InsertHeader([FromBody] HeaderModel model)
         {
-            await _repository.AddAsync(model); 
-            return Ok("Inserted successfully");
+            try
+            {
+                await _repository.AddAsync(model); 
+                return Ok("Inserted successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);  
+            }
         }
 
         [HttpPut("Update")]
         public IActionResult UpdateHeader([FromBody] HeaderModel model)
         {
-            _repository.Update(model); 
-            return Ok("Updated successfully");
+            if (model.ID == null && model.RowPointer == null)
+            {
+                return BadRequest("ID or RowPointer must be provided for updating.");
+            }
+
+            try
+            {
+                _repository.Update(model);
+                return Ok("Updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+            
         }
 
         [HttpDelete("Delete")]
         public async Task<IActionResult> DeleteHeader(int? id = null, Guid? rowPointer = null)
         {
-            await _repository.DeleteAsync(id ?? 0); 
-            return Ok("Deleted successfully");
+            if (id == null && rowPointer == null)
+            {
+                return BadRequest("ID or RowPointer must be provided for deletion.");
+            }
+
+            try
+            {
+                await _repository.DeleteAsync(id ?? 0);
+                return Ok("Deleted successfully");
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+            
         }
     }
 

@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using StoreProject.Models;
 using HeaderManagement.Data;
 using StoreProject.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 public class HeaderRepository : IHeaderRepository
 {
@@ -15,61 +16,6 @@ public class HeaderRepository : IHeaderRepository
         _context = context;
         _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
-
-    //public IEnumerable<dynamic> GetHeaders(int? id = null, Guid? rowPointer = null)
-    //{
-    //    using (IDbConnection db = new SqlConnection(_connectionString))
-    //    {
-    //        var parameters = new DynamicParameters();
-    //        parameters.Add("@Action", "GET_ALL");
-    //        parameters.Add("@ID", id);
-    //        parameters.Add("@RowPointer", rowPointer);
-
-    //        return db.Query("ManageHeader", parameters, commandType: CommandType.StoredProcedure);
-    //    }
-    //}
-
-    //public void InsertHeader(HeaderModel model)
-    //{
-    //    using (IDbConnection db = new SqlConnection(_connectionString))
-    //    {
-    //        var parameters = new DynamicParameters();
-    //        parameters.Add("@Action", "INSERT");
-    //        parameters.Add("@ID", model.ID);
-    //        parameters.Add("@Column1", model.Column1);
-    //        parameters.Add("@CreatedBy", model.CreatedBy);
-
-    //        db.Execute("ManageHeader", parameters, commandType: CommandType.StoredProcedure);
-    //    }
-    //}
-
-    //public void UpdateHeader(HeaderModel model)
-    //{
-    //    using (IDbConnection db = new SqlConnection(_connectionString))
-    //    {
-    //        var parameters = new DynamicParameters();
-    //        parameters.Add("@Action", "UPDATE");
-    //        parameters.Add("@ID", model.ID);
-    //        parameters.Add("@RowPointer", model.RowPointer);
-    //        parameters.Add("@Column1", model.Column1);
-    //        parameters.Add("@UpdatedBy", model.UpdatedBy);
-
-    //        db.Execute("ManageHeader", parameters, commandType: CommandType.StoredProcedure);
-    //    }
-    //}
-
-    //public void DeleteHeader(int? id = null, Guid? rowPointer = null)
-    //{
-    //    using (IDbConnection db = new SqlConnection(_connectionString))
-    //    {
-    //        var parameters = new DynamicParameters();
-    //        parameters.Add("@Action", "DELETE");
-    //        parameters.Add("@ID", id);
-    //        parameters.Add("@RowPointer", rowPointer);
-
-    //        db.Execute("ManageHeader", parameters, commandType: CommandType.StoredProcedure);
-    //    }
-    //}
     public async Task<IEnumerable<HeaderModel>> GetAllAsync()
     {
         using (IDbConnection db = new SqlConnection(_connectionString))
@@ -132,6 +78,20 @@ public class HeaderRepository : IHeaderRepository
 
             await db.ExecuteAsync("ManageHeader", parameters, commandType: CommandType.StoredProcedure);
         }
+    }
+    public async Task<HeaderModel> GetByIdOrRowPointer(int? id, Guid? rowPointer)
+    {
+        if (id.HasValue)
+        {
+            return await _context.Headers.FirstOrDefaultAsync(h => h.ID == id.Value);
+        }
+
+        if (rowPointer.HasValue)
+        {
+            return await _context.Headers.FirstOrDefaultAsync(h => h.RowPointer == rowPointer.Value);
+        }
+
+        return null;
     }
 }
 
