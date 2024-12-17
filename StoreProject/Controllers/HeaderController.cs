@@ -1,83 +1,59 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StoreProject.Models;
-using StoreProject.Data;
-using HeaderManagement.Data;
-using StoreProject.Repositories;
+using StoreProject.Services;
 
 namespace StoreProject.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class HeaderController : ControllerBase
     {
-        private readonly IHeaderRepository _repository;
+        private readonly IHeaderService _headerService;
 
-        public HeaderController(IHeaderRepository repository)
+        public HeaderController(IHeaderService headerService)
         {
-            _repository = repository;
+            _headerService = headerService;
         }
 
-
-        [HttpGet("Get")]
-        public async Task<IActionResult> GetHeaders(int? id = null, Guid? rowPointer = null)
+        // GET: api/Header
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            var result = await _repository.GetAllAsync();
+            var result = await _headerService.GetAllHeadersAsync();
             return Ok(result);
         }
 
-        [HttpPost("Insert")]
-        public async Task<IActionResult> InsertHeader([FromBody] HeaderModel model)
+        // GET: api/Header/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            try
-            {
-                await _repository.AddAsync(model); 
-                return Ok("Inserted successfully");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);  
-            }
+            var header = await _headerService.GetHeaderByIdAsync(id);
+            return header == null ? NotFound() : Ok(header);
         }
 
-        [HttpPut("Update")]
-        public IActionResult UpdateHeader([FromBody] HeaderModel model)
+        // POST: api/Header
+        [HttpPost]
+        public async Task<IActionResult> Create(HeaderModel model)
         {
-            if (model.ID == null && model.RowPointer == null)
-            {
-                return BadRequest("ID or RowPointer must be provided for updating.");
-            }
-
-            try
-            {
-                _repository.Update(model);
-                return Ok("Updated successfully");
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
-            
+            await _headerService.AddHeaderAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = model.ID }, model);
         }
 
-        [HttpDelete("Delete")]
-        public async Task<IActionResult> DeleteHeader(int? id = null, Guid? rowPointer = null)
+        // PUT: api/Header/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, HeaderModel model)
         {
-            if (id == null && rowPointer == null)
-            {
-                return BadRequest("ID or RowPointer must be provided for deletion.");
-            }
+            if (id != model.ID) return BadRequest();
+            await _headerService.UpdateHeaderAsync(model);
+            return NoContent();
+        }
 
-            try
-            {
-                await _repository.DeleteAsync(id ?? 0);
-                return Ok("Deleted successfully");
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
-            
+        // DELETE: api/Header/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _headerService.DeleteHeaderAsync(id);
+            return NoContent();
         }
     }
-
 }

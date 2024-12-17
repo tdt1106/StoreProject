@@ -81,18 +81,10 @@ public class HeaderRepository : IHeaderRepository
     }
     public async Task<HeaderModel> GetByIdOrRowPointer(int? id, Guid? rowPointer)
     {
-        if (id.HasValue)
-        {
-            return await _context.Headers.FirstOrDefaultAsync(h => h.ID == id.Value);
-        }
-
-        if (rowPointer.HasValue)
-        {
-            return await _context.Headers.FirstOrDefaultAsync(h => h.RowPointer == rowPointer.Value);
-        }
-
-        return null;
+        return await _context.Headers
+            .FirstOrDefaultAsync(h => (id != null && h.ID == id) ||
+                                      (rowPointer != null && h.RowPointer == rowPointer));
     }
+
 }
 
- 
